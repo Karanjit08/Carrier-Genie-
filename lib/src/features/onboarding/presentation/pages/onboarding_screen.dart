@@ -1,4 +1,5 @@
 import 'package:carrier_mate/src/features/onboarding/presentation/bloc/onboarding_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -6,6 +7,9 @@ import 'package:hexcolor/hexcolor.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../../../core/constants/images/images.dart';
+import '../../../../core/services/authentication.dart';
+import '../../../home/presentation/pages/home_screen.dart';
+import '../../../login/presentation/pages/authentication_form.dart';
 import '../../../navigation_bar/navigation_bar_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -19,6 +23,19 @@ class OnBoardingScreen extends StatefulWidget {
 
 class _OnBoardingScreenState extends State<OnBoardingScreen> {
   final OnboardingBloc onboardingBloc = OnboardingBloc();
+
+  final _formKey = GlobalKey<FormState>();
+  bool isLogin = true;
+  String fName = '';
+  String lName = '';
+  String email = '';
+  String password = '';
+
+  void changeIsLogin(){
+    setState(() {
+      isLogin = !isLogin;
+    });
+  }
 
   Widget build(BuildContext context) {
     return BlocConsumer<OnboardingBloc, OnboardingState>(
@@ -35,8 +52,8 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
           double height = MediaQuery.of(context).size.height;
         return Scaffold(
           appBar: AppBar(
-            elevation: 0,
-            backgroundColor: HexColor('#e3dcfe'),
+            centerTitle: true,
+            title: isLogin ? Text('Login') : Text('Sign Up'),
           ),
           body: Container(
               width: width.w,
@@ -49,55 +66,111 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                     height: 250.h,
                     child: Lottie.asset('assets/loaders/onboarding_loader.json'),
                   ),
-                  Expanded(
-                      child: Container(
-                        width: width.w,
-                        height: 130.h,
-                        decoration: BoxDecoration(
-                            color: HexColor('#fdefd4'),
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(50.r),
-                                topRight: Radius.circular(50.r)
-                            )
-                        ),
-                        child: Column(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(top: 50,left: 25),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text('Welcome To',style: TextStyle(fontSize: 26.sp,color: HexColor('1d1b1f'),fontWeight: FontWeight.w600,fontFamily: 'Work-Sans-Variable'),),
-                                  SizedBox(width: 5.w,),
-                                  Text('CarrierMate',style: TextStyle(fontSize: 26.sp,color: HexColor('1d1b1f'),fontWeight: FontWeight.w600,fontFamily: 'Work-Sans-Variable'),)
-                                ],
-                              ),
+                  Form(
+                    key: _formKey,
+                    child: Padding(
+                      padding: EdgeInsets.all(16.r),
+                      child: Column(
+                        children: [
+                          if(!isLogin) TextFormField(
+                            key: ValueKey('first_name'),
+                            decoration: InputDecoration(
+                                hintText: 'Enter First Name'
                             ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 25.0,vertical: 15),
-                              child: Text('Experience personalized learning with our AI Flutter Carrier Mate, where you can ask questions, get instant help, and engage in interactive conversations to enhance your knowledge. Complement your learning with our '
-                                  'Practice Cards feature, offering a diverse set of flashcards designed to reinforce concepts and boost your memory.'
-                                  ' Join us today and transform your learning journey!',style: TextStyle(fontSize: 14.sp,color: HexColor('#807e97'),fontWeight: FontWeight.w500,height: 1.4,wordSpacing: 2,fontFamily: 'Work-Sans-Variable'),),
+                            validator: (val){
+                              if(val!.length<2){
+                                return 'Please enter a valid First Name';
+                              }
+                              else{
+                                return null;
+                              }
+                            },
+                            onSaved: (val){
+                              setState(() {
+                                fName = val.toString();
+                              });
+                            },
+                          ),
+                          if(!isLogin) TextFormField(
+                            key: ValueKey('last_name'),
+                            decoration: InputDecoration(
+                                hintText: 'Enter Last Name'
                             ),
-                            SizedBox(height: 8.h,),
-                            InkWell(
-                              onTap: (){
-                                print('Onboarding Get Started Clicked');
-                                onboardingBloc.add(OnboardingButtonClickedNavigateEvent());
-                              },
-                              child: Container(
-                                width: 310.w,
-                                height: 50.h,
-                                decoration: BoxDecoration(
-                                    color: HexColor('0f172a'),
-                                    borderRadius: BorderRadius.circular(30)
-                                ),
-                                child: Center(child: Text('Get Started',style: TextStyle(fontSize: 16.sp,fontWeight: FontWeight.w600,color: Colors.white,fontFamily: 'Work-Sans-Variable'),)),
-                              ),
-                            )
-                          ],
-                        ),
-                      ))
+                            validator: (val){
+                              if(val!.length<2){
+                                return 'Please enter a valid Last Name';
+                              }
+                              else{
+                                return null;
+                              }
+                            },
+                            onSaved: (val){
+                              setState(() {
+                                lName = val.toString();
+                              });
+                            },
+                          ),
+                          TextFormField(
+                            key: ValueKey('email'),
+                            decoration: InputDecoration(
+                                hintText: 'Enter Email Id'
+                            ),
+                            validator: (val){
+                              if(val!.toString().isEmpty || !val.toString().contains('@')){
+                                return 'Please enter a valid Email Id';
+                              }
+                              else{
+                                return null;
+                              }
+                            },
+                            onSaved: (val){
+                              setState(() {
+                                email = val.toString();
+                              });
+                            },
+                          ),
+                          TextFormField(
+                            obscureText: true,
+                            key: ValueKey('password'),
+                            decoration: InputDecoration(
+                                hintText: 'Enter Password'
+                            ),
+                            validator: (val){
+                              if(val.toString().length<6){
+                                return 'Please enter a valid Password';
+                              }
+                              else{
+                                return null;
+                              }
+                            },
+                            onSaved: (val){
+                              setState(() {
+                                password = val.toString();
+                              });
+                            },
+                          ),
+                          SizedBox(height: 20.h,),
+                          SizedBox(
+                              width: double.maxFinite,
+                              height: 50,
+                              child: ElevatedButton(onPressed: (){
+                                if(_formKey.currentState!.validate()){
+                                  _formKey.currentState!.save();
+                                  isLogin ?
+                                  AuthenticationFunctions.signIn(context, email, password)
+                                      :
+                                  AuthenticationFunctions.signUp(context, email, password);
+
+                                }
+                              }, child:  isLogin ? Text('Login') : Text('Sign Up'))),
+                          SizedBox(height: 10.h,),
+                          TextButton(onPressed: (){
+                            changeIsLogin();
+                          }, child:isLogin ?Text("Don't have an account? SignUp") : Text('Already have an account? LogIn'))
+                        ],
+                      ),
+                    ),
+                  )
                 ],
               )
           ),

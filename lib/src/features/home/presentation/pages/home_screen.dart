@@ -1,5 +1,6 @@
 import 'package:carrier_mate/src/features/chat/presentation/pages/chat_screen.dart';
 import 'package:carrier_mate/src/features/practice_cards/presentation/pages/practice_cards_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -29,6 +30,16 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Text('Welcome!! ⚡️',style: TextStyle(color: Colors.black),),
         ),
         automaticallyImplyLeading: false,
+        actions: [
+          Padding(
+            padding:  EdgeInsets.only(right: 20.r),
+            child: InkWell(
+              onTap: ()async{
+                await FirebaseAuth.instance.signOut();
+              },
+                child: Icon(Icons.logout,color: Colors.black,)),
+          )
+        ],
       ),
       body: Container(
         width: width.w,

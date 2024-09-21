@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 class ChatRepo{
   static Future<String> ChatResponseRepo(List<ChatMessageModel> generatedMessages)async{
+    final String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=AIzaSyBBSWyPUrsJJd3N5pOWg3-JrVPRp1OzIhk";
     // Convert the generatedMessages list to a list of maps
     List<Map<String, dynamic>> messagesMap = generatedMessages.map((e) => e.toMap()).toList();
 
